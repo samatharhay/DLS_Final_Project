@@ -4,7 +4,7 @@ import torch.nn as nn
 
 class ADNet(nn.Module):
     def __init__(self, channels, num_of_layers=15):
-        super(DnCNN, self).__init__()
+        super(ADNet, self).__init__()
         kernel_size = 3
         padding = 1
         features = 64
@@ -53,7 +53,7 @@ class ADNet(nn.Module):
     def forward(self, x):
         input = x 
         x1 = self.conv1_1(x)
-		x1 = self.conv1_2(x1)
+        x1 = self.conv1_2(x1)
         x1 = self.conv1_3(x1)
         x1 = self.conv1_4(x1)
         x1 = self.conv1_5(x1)

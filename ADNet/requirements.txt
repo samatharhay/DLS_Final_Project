@@ -1,0 +1,5 @@
+torch==1.0.0
+torchvision==0.2.1
+opencv-python==4.2.0.32
+h5py
+scikit-image
