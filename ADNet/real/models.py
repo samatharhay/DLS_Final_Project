@@ -46,7 +46,7 @@ class ADNet(nn.Module):
                         m.weight.data[j] = -clip_b
                 m.running_var.fill_(0.01)
     def _make_layers(self, block,features, kernel_size, num_of_layers, padding=1, groups=1, bias=False):
-	layers = []
+        layers = []
         for _ in range(num_of_layers):
             layers.append(block(in_channels=features, out_channels=features, kernel_size=kernel_size, padding=padding, groups=groups, bias=bias))
         return nn.Sequential(*layers)

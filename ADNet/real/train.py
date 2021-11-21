@@ -160,7 +160,7 @@ def main():
         torch.save(model.state_dict(), os.path.join(save_dir, model_name)) #tcw201809062210tcw
         t2 = time.clock()
         t3 = t2-t1
-        print t3
+        print(t3)
         '''
         for param in model.parameters():
             param.requires_grad = False

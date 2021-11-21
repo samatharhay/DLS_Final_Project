@@ -50,34 +50,34 @@ def prepare_data(data_path, patch_size, stride, aug_times=1):
             img = cv2.imread(files[i])
             temp = f[:-8] + 'mean.JPG'
             img_label = cv2.imread(temp)
-            print img 
+            print(img)
             h, w, c = img.shape
             for k in range(len(scales)):
-		    #Img = cv2.resize(img, (int(h*scales[k]), int(w*scales[k])), interpolation=cv2.INTER_CUBIC)
-		    #print Img.shape
-		    Img = torch.tensor(img)
-		    Img = Img.permute(2,0,1)
-		    Img = Img.numpy()
-		    #Img = np.expand_dims(Img[:,:,0].copy(), 0)
-		    #Img= np.transpose(image, (2,1,0))
-		    #print  Img.shape
-		    Img = np.float32(normalize(Img))
-		    patches = Im2Patch(Img, win=patch_size, stride=stride)
+                    #Img = cv2.resize(img, (int(h*scales[k]), int(w*scales[k])), interpolation=cv2.INTER_CUBIC)
+                    #print Img.shape
+                    Img = torch.tensor(img)
+                    Img = Img.permute(2,0,1)
+                    Img = Img.numpy()
+                    #Img = np.expand_dims(Img[:,:,0].copy(), 0)
+                    #Img= np.transpose(image, (2,1,0))
+                    #print  Img.shape
+                    Img = np.float32(normalize(Img))
+                    patches = Im2Patch(Img, win=patch_size, stride=stride)
                     img_label = torch.tensor(img_label)
-		    img_label = img_label.permute(2,0,1)
-		    img_label = img_label.numpy()
-		    #Img = np.expand_dims(Img[:,:,0].copy(), 0)
-		    #Img= np.transpose(image, (2,1,0))
-		    #print  Img.shape
-		    img_label = np.float32(normalize(img_label))
-		    patches_label = Im2Patch(img_label, win=patch_size, stride=stride)
-		    print("file: %s scale %.1f # samples: %d" % (files[i], scales[k], patches.shape[3]*aug_times))
-		    for n in range(patches.shape[3]):
-		        data = patches[:,:,:,n].copy()
+                    img_label = img_label.permute(2,0,1)
+                    img_label = img_label.numpy()
+                    #Img = np.expand_dims(Img[:,:,0].copy(), 0)
+                    #Img= np.transpose(image, (2,1,0))
+                    #print  Img.shape
+                    img_label = np.float32(normalize(img_label))
+                    patches_label = Im2Patch(img_label, win=patch_size, stride=stride)
+                    print("file: %s scale %.1f # samples: %d" % (files[i], scales[k], patches.shape[3]*aug_times))
+                    for n in range(patches.shape[3]):
+                        data = patches[:,:,:,n].copy()
                         data_label = patches_label[:,:,:,n].copy()
-		        h5f.create_dataset(str(train_num), data=data)
+                        h5f.create_dataset(str(train_num), data=data)
                         h5f.create_dataset(str(val_num), data=data_label)
-		        train_num += 1
+                        train_num += 1
                         val_num += 1     
     h5f.close()
 

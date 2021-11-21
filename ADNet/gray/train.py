@@ -133,7 +133,7 @@ def main():
     f.close()
     t2 = time.clock()
     t = t2-t1
-    print t 
+    print(t)
 
 if __name__ == "__main__":
     if opt.preprocess:

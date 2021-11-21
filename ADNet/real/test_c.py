@@ -35,11 +35,11 @@ def main():
     net = ADNet(channels=3, num_of_layers=opt.num_of_layers)
     device_ids = [0]
     model = nn.DataParallel(net, device_ids=device_ids).cuda()
-    model.load_state_dict(torch.load(os.path.join(opt.logdir, 'model_1.pth')))
+    model.load_state_dict(torch.load(os.path.join(opt.logdir, 'model_25.pth')))
     model.eval()
     # load data info
     print('Loading data info ...\n')
-    files_source = glob.glob(os.path.join('data', opt.test_data, '*'))
+    files_source = glob.glob(os.path.join('data', opt.test_data, '*.png'))
     files_source.sort()
     # process data
     psnr_test = 0

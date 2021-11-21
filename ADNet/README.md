@@ -15,13 +15,7 @@
 #### openCv for Python
 #### HDF5 for Python
 
-
-
-## Commands
-### Training
-## Commands
-### Training
-### Training datasets 
+## Datasets 
 #### The  training dataset of the gray noisy images is downloaded at https://pan.baidu.com/s/1nkY-b5_mdzliL7Y7N9JQRQ or https://drive.google.com/open?id=1_miSC9_luoUHSqMG83kqrwYjNoEus6Bj (google drive)
 #### The  training dataset of the color noisy images is downloaded at https://pan.baidu.com/s/1ou2mK5JUh-K8iMu8-DMcMw (baiduyun) or https://drive.google.com/open?id=1S1_QrP-fIXeFl5hYY193lr07KyZV8X8r (google drive) 
 #### Test dataset of Set68 is downloaded at https://drive.google.com/file/d/1_fw6EKne--LVnW0mo68RrIY-j6BKPdSp/view?usp=sharing  (google drive) 
@@ -32,62 +26,65 @@
 
 #### The test dataset of real noisy images  is downloaded at https://drive.google.com/file/d/17DE-SV85Slu2foC0F0Ftob5VmRrHWI2h/view?usp=sharing (google drive) 
 
+## Commands
+### Training
+
 ### Train ADNet-S (ADNet with known noise level)
-#### python train.py --prepropcess True --num_of_layers 17 --mode S --noiseL 25 --val_noiseL 25    
+#### python train.py --preprocess True --num_of_layers 17 --mode S --noiseL 25 --val_noiseL 25    
 
 ### Train ADNet-B (DnCNN with blind noise level)
 #### python train.py --preprocess True --num_of_layers 17 --mode B --val_noiseL 25
 
 ### Test 
 ### Gray noisy images
-#### python test.py --num_of_layers 17 --logdir g15 --test_data Set68 --test_noiseL 15 
+#### python test_Gb.py --num_of_layers 17 --logdir g15 --test_data Set68 --test_noiseL 15 
 ### Gray blind denoising
 #### python test_Gb.py --num_of_layers 17 --logdir gblind --test_data Set68 --test_noiseL 25   
 
 ### Color noisy images
-#### python test_c.py --num_of_layers 17 --logdir g15 --test_data Set68 --test_noiseL 15 
+#### python test_c.py --num_of_layers 17 --logdir g15 --test_data CBSD68 --test_noiseL 15 
 ### Color blind denoising
-#### python test_c.py --num_of_layers 17 --logdir cblind --test_data Set68 --test_noiseL 15  
+#### python test_c.py --num_of_layers 17 --logdir cblind --test_data CBSD68 --test_noiseL 15  
 
 ### Network architecture
-![RUNOOB 图标](./networkandresult/1.png)
+![RUNOOB 图标](networkandresult/1.png)
 
 ### Test Results
 #### 1. ADNet for BSD68
-![RUNOOB 图标](./networkandresult/2BSD.png)
+![RUNOOB 图标](networkandresult/2BSD.png)
 
 #### 2. ADNet for Set12
-![RUNOOB 图标](./networkandresult/3Set12.png)
+![RUNOOB 图标](networkandresult/3Set12.png)
 
 #### 3. ADNet for CBSD68, Kodak24 and McMaster
-![RUNOOB 图标](./networkandresult/4color.png)
+![RUNOOB 图标](networkandresult/4color.png)
 
 #### 4. ADNet for CBSD68, Kodak24 and McMaster
-![RUNOOB 图标](./networkandresult/5realnoisy.png)
+![RUNOOB 图标](networkandresult/5realnoisy.png)
 
 #### 5. Running time of ADNet for a noisy image of different sizes.
-![RUNOOB 图标](./networkandresult/6ruungtime.png)
+![RUNOOB 图标](networkandresult/6ruungtime.png)
 
 #### 6. Complexity of ADNet
-![RUNOOB 图标](./networkandresult/7complexity.png)
+![RUNOOB 图标](networkandresult/7complexity.png)
 
 #### 7. 9 real noisy images
-![RUNOOB 图标](./networkandresult/8realnoisy.png)
+![RUNOOB 图标](networkandresult/8realnoisy.png)
 
 #### 8. 9 thermodynamic images from the proposed A
-![RUNOOB 图标](./networkandresult/9ab.png)
+![RUNOOB 图标](networkandresult/9ab.png)
 
 #### 9. Visual results of BSD68
-![RUNOOB 图标](./networkandresult/9gray.png)
+![RUNOOB 图标](networkandresult/9gray.png)
 
 #### 10. Visual results of Set12
-![RUNOOB 图标](./networkandresult/10gray.png)
+![RUNOOB 图标](networkandresult/10gray.png)
 
 #### 11. Visual results of Kodak24
-![RUNOOB 图标](./networkandresult/11.png)
+![RUNOOB 图标](networkandresult/11.png)
 
 #### 12. Visual results of McMaster 
-![RUNOOB 图标](./networkandresult/12.png)
+![RUNOOB 图标](networkandresult/12.png)
 
 ### If you cite this paper, please the following format:  
 #### 1.Tian C, Xu Y, Li Z, et al. Attention-guided CNN for image denoising[J]. Neural Networks, 2020, 124,177-129.  

@@ -52,8 +52,8 @@ class Self_Attn(nn.Module):
         m_batchsize, C, width,height = x.size()
         proj_query = self.query_conv(x).view(m_batchsize,-1,width*height).permute(0,2,1)
         proj_key = self.key_conv(x).view(m_batchsize,-1,width*height)
-        print proj_query.size()
-        print proj_key.size()
+        print(proj_query.size())
+        print(proj_key.size())
         energy = torch.bmm(proj_query,proj_key)
         attention = self.softmax(energy)
         proj_value = self.value_conv(x).view(m_batchsize,-1,width*height) 
@@ -106,7 +106,7 @@ class ADNet(nn.Module):
                         m.weight.data[j] = -clip_b
                 m.running_var.fill_(0.01)
     def _make_layers(self, block,features, kernel_size, num_of_layers, padding=1, groups=1, bias=False):
-	layers = []
+        layers = []
         for _ in range(num_of_layers):
             layers.append(block(in_channels=features, out_channels=features, kernel_size=kernel_size, padding=padding, groups=groups, bias=bias))
         return nn.Sequential(*layers)
