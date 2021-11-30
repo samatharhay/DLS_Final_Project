@@ -9,6 +9,8 @@ import glob
 import torch.utils.data as udata
 import torch
 import torch.nn as nn
+import scipy.io
+from skimage.transform import resize
 from utils import data_augmentation
 
 def normalize(data):
@@ -33,8 +35,8 @@ def Im2Patch(img, win, stride=1):
 def prepare_data(data_path, patch_size, stride, aug_times=1):
     # train
     print('process training data')
-    scales = [1, 0.9, 0.8, 0.7]
-    files = glob.glob(os.path.join(data_path, 'pristine_images_color', '*'))
+    scales = [.5]
+    files = glob.glob(os.path.join(data_path, 'SIDD_val', '*'))
     files.sort()
     h5f = h5py.File('train.h5', 'w')
     train_num = 0
@@ -43,36 +45,37 @@ def prepare_data(data_path, patch_size, stride, aug_times=1):
         h, w, c = img.shape
         for k in range(len(scales)):
             Img = cv2.resize(img, (int(h*scales[k]), int(w*scales[k])), interpolation=cv2.INTER_CUBIC)
-            Img = torch.tensor(Img)
-            Img = Img.permute(2,0,1)
-            Img = Img.numpy()
+            Img = Img.transpose(2,0,1)
             Img = np.float32(normalize(Img))
-            patches = Im2Patch(Img, win=patch_size, stride=stride)
-            print("file: %s scale %.1f # samples: %d" % (files[i], scales[k], patches.shape[3]*aug_times))
-            for n in range(patches.shape[3]):
-                data = patches[:,:,:,n].copy()
-                h5f.create_dataset(str(train_num), data=data)
-                train_num += 1
-                for m in range(aug_times-1):
-                    data_aug = data_augmentation(data, np.random.randint(1,8))
-                    h5f.create_dataset(str(train_num)+"_aug_%d" % (m+1), data=data_aug)
-                    train_num += 1
+            h5f.create_dataset(str(train_num), data=Img)
+            train_num += 1
+            #patches = Im2Patch(Img, win=patch_size, stride=stride)
+            #for n in range(patches.shape[3]):
+            #    data = patches[:,:,:,n].copy()
+            #    h5f.create_dataset(str(train_num), data=data)
+            #    train_num += 1
+            #    for m in range(aug_times-1):
+            #        data_aug = data_augmentation(data, np.random.randint(1,8))
+            #        h5f.create_dataset(str(train_num)+"_aug_%d" % (m+1), data=data_aug)
+            #        train_num += 1
     h5f.close()
     # val
     print('\nprocess validation data')
-    files = glob.glob(os.path.join(data_path, 'CBSD68', '*.bmp'))
-    files.sort()
+    benchmark_data = np.array(scipy.io.loadmat('data/ValidationGtBlocksSrgb.mat')['ValidationGtBlocksSrgb'])
+    benchmark_data = benchmark_data.reshape(-1, 256, 256, 3)
+    benchmark = []
+    for im in benchmark_data:
+        benchmark.append(resize(im[:], (128, 128)))
+    benchmark = np.moveaxis(np.array(benchmark), -1, 1)
+    #files = glob.glob(os.path.join(data_path, 'CBSD68', '*.bmp'))
+    #files.sort()
     h5f = h5py.File('val.h5', 'w')
-    val_num = 0
-    for i in range(len(files)):
-        print("file: %s" % files[i])
-        img = cv2.imread(files[i])
-        img = torch.tensor(img)
-        img = img.permute(2,0,1)
-        img = img.numpy()
+    #for i in range(len(files)):
+    #    img = cv2.imread(files[i])
+    #    img = img.transpose(2,0,1)
+    for val_num, img in enumerate(benchmark):
         img = np.float32(normalize(img))
         h5f.create_dataset(str(val_num), data=img)
-        val_num += 1
     h5f.close()
     print('training set, # samples %d\n' % train_num)
     print('val set, # samples %d\n' % val_num)

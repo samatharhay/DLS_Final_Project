@@ -10,6 +10,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 #from tensorboardX import SummaryWriter
 from torch.nn.modules.loss import _Loss #TCW20180913TCW
+import matplotlib.pyplot as plt
 from models import ADNet
 from dataset import prepare_data, Dataset
 from utils import *
@@ -21,13 +22,31 @@ parser = argparse.ArgumentParser(description="ADNet")
 parser.add_argument("--preprocess", type=bool, default=False, help='run prepare_data or not')
 parser.add_argument("--batchSize", type=int, default=128, help="Training batch size")
 parser.add_argument("--num_of_layers", type=int, default=17, help="Number of total layers")
-parser.add_argument("--epochs", type=int, default=70, help="Number of training epochs")
+parser.add_argument("--epochs", type=int, default=2, help="Number of training epochs")
 parser.add_argument("--milestone", type=int, default=30, help="When to decay learning rate; should be less than epochs")
 parser.add_argument("--lr", type=float, default=1e-3, help="Initial learning rate")
 parser.add_argument("--outf", type=str, default="logs", help='path of log files')
 parser.add_argument("--mode", type=str, default="S", help='with known noise level (S) or blind training (B)')
 parser.add_argument("--noiseL", type=float, default=50, help='noise level; ignored when mode=B')
 parser.add_argument("--val_noiseL", type=float, default=50, help='noise level used on validation set')
+
+def plot(losses, pnsrs):
+    data_dict = {"Train Loss": losses, "Test PSNR": psnrs}
+
+    fig, axs = plt.subplots(2, figsize=(4,6), sharex=True)
+    for data_type, data in data_dict.items():
+        s = data_type.split()
+        split = s[0]
+        label = s[1]
+        axs[split].plot(range(1, len(data)+1), data, label=label)
+        #axs[split].legend()
+        axs[split].set_ylabel(label)
+        title = f"{data_type}"
+        axs[split].set_title(title)
+    axs[1].set_xlabel("Epoch")
+    fig.tight_layout()
+    plt.savefig(f"plot.png", bbox_inches="tight")
+
 
 opt = parser.parse_args()
 class sum_squared_error(_Loss):  # PyTorch 0.4.1
@@ -64,6 +83,7 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=opt.lr)
     noiseL_B=[0,55] # ingnored when opt.mode=='S'
     psnr_list = [] 
+    loss_list = []
     for epoch in range(opt.epochs):
         if epoch <= opt.milestone:
             current_lr = opt.lr
@@ -78,6 +98,7 @@ def main():
             param_group["lr"] = current_lr
         print('learning rate %f' % current_lr)
         # train
+        epoch_loss = 0
         for i, data in enumerate(loader_train, 0):
             # training step
             model.train()
@@ -98,11 +119,14 @@ def main():
             optimizer.zero_grad() 
             loss.backward()
             optimizer.step()
-            model.eval()
-            out_train = torch.clamp(model(imgn_train), 0., 1.) 
-            psnr_train = batch_PSNR(out_train, img_train, 1.)
-            print("[epoch %d][%d/%d] loss: %.4f PSNR_train: %.4f" %
-                (epoch+1, i+1, len(loader_train), loss.item(), psnr_train))
+            epoch_loss += loss.item()
+            #model.eval()
+            #out_train = torch.clamp(model(imgn_train), 0., 1.) 
+            #psnr_train = batch_PSNR(out_train, img_train, 1.)
+            #print("[epoch %d][%d/%d] loss: %.4f PSNR_train: %.4f" %
+            #    (epoch+1, i+1, len(loader_train), loss.item(), psnr_train))
+        print("epoch %d loss: %.4f" % (epoch+1, epoch_loss/len(loader_train)))
+        loss_list.append(epoch_loss/len(loader_train))
         model.eval() 
         # validate
         psnr_val = 0
@@ -126,6 +150,7 @@ def main():
     for line in psnr_list: 
         f.write(line+'\n') 
     f.close()
+    plot(loss_list, psnr_list)
 
 if __name__ == "__main__":
     if opt.preprocess:
