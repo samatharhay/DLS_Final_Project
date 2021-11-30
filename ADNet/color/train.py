@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser(description="ADNet")
 parser.add_argument("--preprocess", type=bool, default=False, help='run prepare_data or not')
 parser.add_argument("--batchSize", type=int, default=128, help="Training batch size")
 parser.add_argument("--num_of_layers", type=int, default=17, help="Number of total layers")
-parser.add_argument("--epochs", type=int, default=2, help="Number of training epochs")
+parser.add_argument("--epochs", type=int, default=70, help="Number of training epochs")
 parser.add_argument("--milestone", type=int, default=30, help="When to decay learning rate; should be less than epochs")
 parser.add_argument("--lr", type=float, default=1e-3, help="Initial learning rate")
 parser.add_argument("--outf", type=str, default="logs", help='path of log files')
@@ -30,25 +30,26 @@ parser.add_argument("--mode", type=str, default="S", help='with known noise leve
 parser.add_argument("--noiseL", type=float, default=50, help='noise level; ignored when mode=B')
 parser.add_argument("--val_noiseL", type=float, default=50, help='noise level used on validation set')
 
-def plot(losses, pnsrs):
+opt = parser.parse_args()
+
+def plot(losses, psnrs):
     data_dict = {"Train Loss": losses, "Test PSNR": psnrs}
 
     fig, axs = plt.subplots(2, figsize=(4,6), sharex=True)
-    for data_type, data in data_dict.items():
+    for i, item in enumerate(data_dict.items()):
+        data_type, data = item
         s = data_type.split()
         split = s[0]
         label = s[1]
-        axs[split].plot(range(1, len(data)+1), data, label=label)
+        axs[i].plot(range(1, len(data)+1), data, label=label)
         #axs[split].legend()
-        axs[split].set_ylabel(label)
+        axs[i].set_ylabel(label)
         title = f"{data_type}"
-        axs[split].set_title(title)
+        axs[i].set_title(title)
     axs[1].set_xlabel("Epoch")
     fig.tight_layout()
     plt.savefig(f"plot.png", bbox_inches="tight")
 
-
-opt = parser.parse_args()
 class sum_squared_error(_Loss):  # PyTorch 0.4.1
     """
     Definition: sum_squared_error = 1/2 * nn.MSELoss(reduction = 'sum')
@@ -140,15 +141,14 @@ def main():
             #print 'b'
             psnr_val += batch_PSNR(out_val, img_val, 1.)
         psnr_val /= len(dataset_val)
-        psnr_val1 = str(psnr_val) 
-        psnr_list.append(psnr_val1) 
+        psnr_list.append(psnr_val) 
         print("\n[epoch %d] PSNR_val: %.4f" % (epoch+1, psnr_val))
         model_name = 'model'+ '_' + str(epoch+1) + '.pth' 
         torch.save(model.state_dict(), os.path.join(save_dir, model_name)) 
     filename = save_dir + 'psnr.txt' 
     f = open(filename,'w') 
     for line in psnr_list: 
-        f.write(line+'\n') 
+        f.write(f'{line}\n') 
     f.close()
     plot(loss_list, psnr_list)
 
