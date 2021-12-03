@@ -16,7 +16,7 @@ from dataset import prepare_data, Dataset
 from utils import *
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 parser = argparse.ArgumentParser(description="ADNet")
 parser.add_argument("--preprocess", type=bool, default=False, help='run prepare_data or not')
@@ -27,28 +27,32 @@ parser.add_argument("--milestone", type=int, default=30, help="When to decay lea
 parser.add_argument("--lr", type=float, default=1e-3, help="Initial learning rate")
 parser.add_argument("--outf", type=str, default="logs", help='path of log files')
 parser.add_argument("--mode", type=str, default="S", help='with known noise level (S) or blind training (B)')
+parser.add_argument("--test_data", type=str, default='CBSD68', help='which test data to use')
+parser.add_argument("--aug_train_data", type=bool, default=False, help='whether to augment the training data or not')
 parser.add_argument("--noiseL", type=float, default=50, help='noise level; ignored when mode=B')
 parser.add_argument("--val_noiseL", type=float, default=50, help='noise level used on validation set')
-
 opt = parser.parse_args()
 
 def plot(losses, psnrs):
-    data_dict = {"Train Loss": losses, "Test PSNR": psnrs}
+    data_dict = {f"Train Loss SIDD": losses, f"Test PSNR {opt.test_data}": psnrs}
 
-    fig, axs = plt.subplots(2, figsize=(4,6), sharex=True)
+    fig, axs = plt.subplots(len(data_dict), figsize=(4,6), sharex=True)
     for i, item in enumerate(data_dict.items()):
-        data_type, data = item
-        s = data_type.split()
+        info, data = item
+        s = info.split()
         split = s[0]
-        label = s[1]
-        axs[i].plot(range(1, len(data)+1), data, label=label)
+        metric = s[1]
+        t_data = s[2]
+        axs[i].plot(range(1, len(data)+1), data, label=metric)
         #axs[split].legend()
-        axs[i].set_ylabel(label)
-        title = f"{data_type}"
+        axs[i].set_ylabel(metric)
+        title = f"{split} {metric} on {t_data}"
         axs[i].set_title(title)
-    axs[1].set_xlabel("Epoch")
+    axs[-1].set_xlabel("Epoch")
     fig.tight_layout()
-    plt.savefig(f"plot.png", bbox_inches="tight")
+    plot_dir = "plots"
+    os.makedirs(plot_dir, exist_ok=True)
+    plt.savefig(f"{plot_dir}/aug-{opt.aug_train_data}_{opt.test_data}.png", bbox_inches="tight")
 
 class sum_squared_error(_Loss):  # PyTorch 0.4.1
     """
@@ -105,7 +109,7 @@ def main():
             model.train()
             img_train = data
             if opt.mode == 'S':
-                 noise = torch.FloatTensor(img_train.size()).normal_(mean=0, std=opt.noiseL/255.)
+                noise = torch.FloatTensor(img_train.size()).normal_(mean=0, std=opt.noiseL/255.)
             if opt.mode == 'B':
                 noise = torch.zeros(img_train.size())
                 stdN = np.random.uniform(noiseL_B[0], noiseL_B[1], size=noise.size()[0])
@@ -155,7 +159,7 @@ def main():
 if __name__ == "__main__":
     if opt.preprocess:
         if opt.mode == 'S':
-            prepare_data(data_path='data', patch_size=50, stride=40, aug_times=1) 
+            prepare_data(opt, data_path='data', patch_size=50, stride=40, aug_times=1) 
         if opt.mode == 'B':
-            prepare_data(data_path='data', patch_size=50, stride=10, aug_times=2)
+            prepare_data(opt, data_path='data', patch_size=50, stride=10, aug_times=2)
     main()
